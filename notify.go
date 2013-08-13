@@ -179,7 +179,7 @@ func (l *Listener) Listen(relname string, c chan<- *Notification) error {
 func (l *Listener) simpleQuery2(q string) (err error) {
 	defer errRecover(&err)
 
-	b := newWriteBuf('Q')
+	b := l.cn.writeBuf('Q')
 	b.string(q)
 	l.cn.send(b)
 
