@@ -1,7 +1,9 @@
 /*
 
-Below you will find a self-contained Go program which uses the LISTEN / NOTIFY
+Below you will find two self-contained Go programs which use the LISTEN / NOTIFY
 mechanism to avoid polling the database while waiting for more work to arrive.
+
+This is the first program, listening for notifications:
 
     //
     // You can see the program in action by defining a function similar to
@@ -94,6 +96,36 @@ mechanism to avoid polling the database while waiting for more work to arrive.
             // process all available work before waiting for notifications
             getWork(db)
             waitForNotification(listener)
+        }
+    }
+
+This is the second, notifying periodically:
+
+    package main
+
+    import (
+        _ "github.com/lib/pq"
+
+        "database/sql"
+        "fmt"
+        "time"
+    )
+
+    func main() {
+        var conninfo string = ""
+
+        db, err := sql.Open("postgres", conninfo)
+        if err != nil {
+            panic(err)
+        }
+
+        for {
+            <- time.After(5 * time.Second)
+            fmt.Println("generated more work; notifying")
+            _, err := db.Exec("NOTIFY getwork")
+            if err != nil {
+                panic(err)
+            }
         }
     }
 
